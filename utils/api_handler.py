@@ -25,4 +25,26 @@ def fetch_all_products():
         return []
 
 
+def create_product_mapping(api_products):
+    """
+    Creates a mapping of product IDs to product info.
+    """
+
+    product_map = {}
+
+    for product in api_products:
+        pid = product.get("id")
+
+        # Extract required fields only
+        info = {
+            "title": product.get("title"),
+            "category": product.get("category"),
+            "brand": product.get("brand"),
+            "rating": product.get("rating"),
+            "price": product.get("price")
+        }
+
+        product_map[pid] = info
+
+    return product_map
 
