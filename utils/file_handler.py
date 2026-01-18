@@ -23,3 +23,57 @@ def read_sales_data(filename):
     # Strip header and blank lines
     return [line for line in lines[1:] if line.strip()]
 
+
+
+def parse_transactions(raw_lines):
+    """
+    Converts raw pipe-delimited lines into structured transaction dictionaries.
+    """
+
+    cleaned = []
+
+    for line in raw_lines:
+        parts = line.split("|")
+
+        # Should have exactly 8 fields
+        if len(parts) != 8:
+            continue
+
+        (
+            tid,
+            date,
+            pid,
+            pname,
+            qty,
+            price,
+            cid,
+            region
+        ) = parts
+
+        # Clean product name and numeric fields
+        pname = pname.replace(",", " ")
+        qty = qty.replace(",", "")
+        price = price.replace(",", "")
+
+        try:
+            qty = int(qty)
+            price = float(price)
+        except ValueError:
+            continue
+
+        cleaned.append({
+            "TransactionID": tid,
+            "Date": date,
+            "ProductID": pid,
+            "ProductName": pname,
+            "Quantity": qty,
+            "UnitPrice": price,
+            "CustomerID": cid,
+            "Region": region
+        })
+
+    return cleaned
+
+
+
+
