@@ -76,4 +76,71 @@ def parse_transactions(raw_lines):
 
 
 
+def validate_and_filter(transactions, region=None, min_amount=None, max_amount=None):
+    """
+    Validates each transaction, then applies optional region and amount filters.
+    """
 
+    valid = []
+    invalid = 0
+
+    # ---------- VALIDATION ----------
+    for tx in transactions:
+        quantity = tx["Quantity"]
+        price = tx["UnitPrice"]
+
+        if (
+            quantity <= 0 or
+            price <= 0 or
+            not tx["TransactionID"].startswith("T") or
+            not tx["ProductID"].startswith("P") or
+            not tx["CustomerID"].startswith("C") or
+            not tx["Region"]
+        ):
+            invalid += 1
+            continue
+
+        valid.append(tx)
+
+    # Counters for summary
+    filtered_by_region = 0
+    filtered_by_amount = 0
+
+    # ---------- REGION FILTER ----------
+    if region:
+        filtered = []
+        for tx in valid:
+            if tx["Region"] == region:
+                filtered.append(tx)
+            else:
+                filtered_by_region += 1
+        valid = filtered
+
+    # ---------- AMOUNT FILTER ----------
+    if min_amount is not None or max_amount is not None:
+        filtered = []
+
+        for tx in valid:
+            amount = tx["Quantity"] * tx["UnitPrice"]
+
+            if min_amount is not None and amount < min_amount:
+                filtered_by_amount += 1
+                continue
+            if max_amount is not None and amount > max_amount:
+                filtered_by_amount += 1
+                continue
+
+            filtered.append(tx)
+
+        valid = filtered
+
+    # ---------- SUMMARY ----------
+    summary = {
+        "total_input": len(transactions),
+        "invalid": invalid,
+        "filtered_by_region": filtered_by_region,
+        "filtered_by_amount": filtered_by_amount,
+        "final_count": len(valid),
+    }
+
+    return valid, invalid, summary
