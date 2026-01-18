@@ -147,3 +147,30 @@ def find_peak_sales_day(transactions):
 
 
 
+def low_performing_products(transactions, threshold=10):
+    """
+    Returns all products whose total quantity sold is below threshold.
+    Sorted by quantity ascending.
+    """
+
+    stats = {}
+
+    for tx in transactions:
+        name = tx["ProductName"]
+        qty = tx["Quantity"]
+        rev = qty * tx["UnitPrice"]
+
+        entry = stats.setdefault(name, {"qty": 0, "rev": 0.0})
+        entry["qty"] += qty
+        entry["rev"] += rev
+
+    # Filter + sort
+    low = [
+        (name, s["qty"], s["rev"])
+        for name, s in stats.items()
+        if s["qty"] < threshold
+    ]
+
+    low.sort(key=lambda x: x[1])
+
+    return low
