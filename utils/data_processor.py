@@ -92,3 +92,58 @@ def customer_analysis(transactions):
 
 
 
+def daily_sales_trend(transactions):
+    """
+    Summaries revenue and customer activity for each date.
+    """
+
+    daily = {}
+
+    for tx in transactions:
+        date = tx["Date"]
+        amount = tx["Quantity"] * tx["UnitPrice"]
+        cust = tx["CustomerID"]
+
+        stats = daily.setdefault(date, {"rev": 0.0, "count": 0, "cust": set()})
+
+        stats["rev"] += amount
+        stats["count"] += 1
+        stats["cust"].add(cust)
+
+    # Convert to final structure
+    final = {
+        date: {
+            "revenue": stats["rev"],
+            "transaction_count": stats["count"],
+            "unique_customers": len(stats["cust"])
+        }
+        for date, stats in daily.items()
+    }
+
+    # Sort chronologically
+    return dict(sorted(final.items(), key=lambda x: x[0]))
+
+
+
+def find_peak_sales_day(transactions):
+    """
+    Returns (date, revenue, transaction_count) for the highest revenue day.
+    """
+
+    daily = {}
+
+    for tx in transactions:
+        date = tx["Date"]
+        amount = tx["Quantity"] * tx["UnitPrice"]
+
+        stats = daily.setdefault(date, {"rev": 0.0, "count": 0})
+        stats["rev"] += amount
+        stats["count"] += 1
+
+    # Select max revenue entry
+    peak_date, stats = max(daily.items(), key=lambda x: x[1]["rev"])
+
+    return peak_date, stats["rev"], stats["count"]
+
+
+
